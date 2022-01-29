@@ -1,6 +1,7 @@
 package server
 
 import (
+	"ByteDanceCamp8th/api"
 	"ByteDanceCamp8th/server/middleware"
 	"github.com/gin-gonic/gin"
 )
@@ -8,7 +9,6 @@ import (
 // NewRouter 路由配置
 func NewRouter() *gin.Engine {
 	r := gin.Default()
-	gin.New()
 	r.Use(middleware.Cors())
 	// 路由
 	g := r.Group("/api/v1")
@@ -34,7 +34,7 @@ func NewRouter() *gin.Engine {
 	g.POST("/teacher/bind_course")
 	g.POST("/teacher/unbind_course")
 	g.GET("/teacher/get_course")
-	g.POST("/course/schedule")
+	g.POST("/course/schedule", api.Schedule)
 
 	// 抢课
 	g.POST("/student/book_course")
