@@ -34,19 +34,19 @@ type ResponseMeta struct {
 }
 
 /* 系统用户 */
-//type TMember struct {
-//	UserID   string   //用户id
-//	Nickname string   //昵称
-//	Username string   //用户名
-//	UserType UserType //类型（学生or管理员or教师）
-//}
+type TMember struct {
+	UserID   string   //用户id
+	Nickname string   //昵称
+	Username string   //用户名
+	UserType UserType //类型（学生or管理员or教师）
+}
 
-///* 课程 */
-//type TCourse struct {
-//	CourseID string		//课程id
-//	Name     string		//课程名称
-//	TeacherID string	//授课教师id
-//}
+/* 课程 */
+type TCourse struct {
+	CourseID  string //课程id
+	Name      string //课程名称
+	TeacherID string //授课教师id
+}
 
 // -----------------------------------
 
@@ -238,7 +238,7 @@ type GetTeacherCourseResponse struct {
 // 排课求解器，使老师绑定课程的最优解， 老师有且只能绑定一个课程
 // Method： Post
 type ScheduleCourseRequest struct {
-	TeacherCourseRelationShip map[string][]string // key 为 teacherID , val 为老师期望绑定的课程 courseID 数组
+	TeacherCourseRelationShip map[string][]string `binding:"required"` // key 为 teacherID , val 为老师期望绑定的课程 courseID 数组
 }
 
 type ScheduleCourseResponse struct {

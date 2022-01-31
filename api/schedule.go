@@ -47,7 +47,9 @@ func scheduleCourse(scr *model.ScheduleCourseRequest) *model.ScheduleCourseRespo
 	//寻找增广路径
 	for k := range scr.TeacherCourseRelationShip {
 		visited = make(map[string]bool, len(scr.TeacherCourseRelationShip))
-		find(k)
+		if !find(k) {
+			break
+		}
 	}
 
 	if len(ans.Data) < len(scr.TeacherCourseRelationShip) {
