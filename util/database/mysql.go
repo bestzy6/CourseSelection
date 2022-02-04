@@ -25,7 +25,8 @@ func InitMysql() {
 	)
 	connString := account + ":" + password + "@tcp(" + addrMYSQL + ")/" + dbName + "?charset=utf8mb4&parseTime=True&loc=Local"
 	db, err := gorm.Open(mysql.Open(connString), &gorm.Config{
-		Logger: newLogger,
+		Logger:                 newLogger,
+		SkipDefaultTransaction: true, //关闭自动开启事务
 	})
 	sqlDB, err := db.DB()
 	if err != nil {
