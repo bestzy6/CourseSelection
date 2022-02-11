@@ -23,14 +23,13 @@ func NewRouter() *gin.Engine {
 
 	// 登录
 
-	g.POST("/auth/login")
-	g.POST("/auth/logout")
-	g.GET("/auth/whoami")
+	//g.POST("/auth/login", api.Login)
+	//g.POST("/auth/logout", api.Logout)
+	//g.GET("/auth/whoami", api.Whoami)
 
 	// 排课
 	g.POST("/course/create", api.CreateCourse)
 	g.GET("/course/get", api.GetCourse)
-
 	g.POST("/teacher/bind_course", api.BindCourse)
 	g.POST("/teacher/unbind_course", api.UnBindCourse)
 	g.GET("/teacher/get_course", api.GetTeacherCourse)

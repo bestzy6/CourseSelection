@@ -1,4 +1,4 @@
-package database
+package model
 
 import (
 	"gorm.io/driver/mysql"
@@ -9,7 +9,15 @@ import (
 	"time"
 )
 
-var DB *gorm.DB
+//以下是配置mysql数据库
+var (
+	addrMYSQL = "127.0.0.1:3306" //mysql地址
+	account   = "root"           //mysql账号
+	password  = "root"           //mysql密码
+	dbName    = "bytedancecamp"  //mysql数据库
+)
+
+var db *gorm.DB
 
 // InitMysql 初始化mysql链接
 func InitMysql() {
@@ -24,11 +32,11 @@ func InitMysql() {
 		},
 	)
 	connString := account + ":" + password + "@tcp(" + addrMYSQL + ")/" + dbName + "?charset=utf8mb4&parseTime=True&loc=Local"
-	db, err := gorm.Open(mysql.Open(connString), &gorm.Config{
+	dB, err := gorm.Open(mysql.Open(connString), &gorm.Config{
 		Logger:                 newLogger,
 		SkipDefaultTransaction: true, //关闭自动开启事务
 	})
-	sqlDB, err := db.DB()
+	sqlDB, err := dB.DB()
 	if err != nil {
 		log.Fatalln("mysql lost:", err)
 	}
@@ -37,5 +45,5 @@ func InitMysql() {
 	sqlDB.SetMaxIdleConns(10)
 	//打开
 	sqlDB.SetMaxOpenConns(20)
-	DB = db
+	db = dB
 }

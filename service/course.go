@@ -1,7 +1,6 @@
 package service
 
 import (
-	"ByteDanceCamp8th/dao"
 	"ByteDanceCamp8th/model"
 	"strconv"
 )
@@ -9,10 +8,10 @@ import (
 // GetTeacherCourseService 获取老师所绑定课程的服务
 func GetTeacherCourseService(req model.GetTeacherCourseRequest) (resp model.GetTeacherCourseResponse) {
 	teacherId, _ := strconv.Atoi(req.TeacherID)
-	course := model.Course{
+	course := &model.Course{
 		TeacherID: teacherId,
 	}
-	teacherCourse := dao.GetTeacherCourse(&course)
+	teacherCourse := course.GetTeacherCourse()
 	ans := make([]*model.TCourse, 0, len(teacherCourse))
 	for _, v := range teacherCourse {
 		thisCourse := &model.TCourse{
@@ -33,11 +32,11 @@ func GetTeacherCourseService(req model.GetTeacherCourseRequest) (resp model.GetT
 func UnBindCourseService(req model.UnbindCourseRequest) (resp model.UnbindCourseResponse) {
 	courseid, _ := strconv.Atoi(req.CourseID)
 	teacherid, _ := strconv.Atoi(req.TeacherID)
-	course := model.Course{
+	course := &model.Course{
 		CourseID:  courseid,
 		TeacherID: teacherid,
 	}
-	if err := dao.UnBindCourse(&course); err != nil {
+	if err := course.UnBindCourse(); err != nil {
 		resp.Code = model.CourseNotBind
 	} else {
 		resp.Code = model.OK
@@ -49,11 +48,11 @@ func UnBindCourseService(req model.UnbindCourseRequest) (resp model.UnbindCourse
 func BindCourseService(req model.BindCourseRequest) (resp model.BindCourseResponse) {
 	courseid, _ := strconv.Atoi(req.CourseID)
 	teacherid, _ := strconv.Atoi(req.TeacherID)
-	course := model.Course{
+	course := &model.Course{
 		CourseID:  courseid,
 		TeacherID: teacherid,
 	}
-	if err := dao.BindCourse(&course); err != nil {
+	if err := course.BindCourse(); err != nil {
 		resp.Code = model.CourseHasBound
 	} else {
 		resp.Code = model.OK
@@ -63,11 +62,11 @@ func BindCourseService(req model.BindCourseRequest) (resp model.BindCourseRespon
 
 // CreateCourseService 创建课程的服务
 func CreateCourseService(req model.CreateCourseRequest) (resp model.CreateCourseResponse) {
-	course := model.Course{
+	course := &model.Course{
 		Name:     req.Name,
 		CapTotal: req.Cap,
 	}
-	courseid, err := dao.CreateCourse(&course)
+	err := course.CreateCourse()
 	if err != nil {
 		resp.Code = model.UnknownError
 		return
@@ -75,14 +74,18 @@ func CreateCourseService(req model.CreateCourseRequest) (resp model.CreateCourse
 		resp.Code = model.OK
 		resp.Data = struct {
 			CourseID string
-		}{courseid}
+		}{strconv.Itoa(course.CourseID)}
 		return
 	}
 }
 
 // GetCourseService 查询课程的服务
 func GetCourseService(req model.GetCourseRequest) (resp model.GetCourseResponse) {
-	course, err := dao.GetCourse(req.CourseID)
+	courseid, _ := strconv.Atoi(req.CourseID)
+	course := &model.Course{
+		CourseID: courseid,
+	}
+	err := course.GetCourse()
 	if err != nil {
 		resp.Code = model.CourseNotExisted
 		return
@@ -97,7 +100,7 @@ func GetCourseService(req model.GetCourseRequest) (resp model.GetCourseResponse)
 	}
 }
 
-// ScheduleCourse 求解器，暂时使用的是匈牙利算法
+// ScheduleCourse 求解器，使用的是匈牙利算法
 func ScheduleCourse(scr *model.ScheduleCourseRequest) *model.ScheduleCourseResponse {
 	ans := new(model.ScheduleCourseResponse)
 	ans.Code = model.OK
