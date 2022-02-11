@@ -3,6 +3,8 @@ package dao
 import (
 	"ByteDanceCamp8th/model"
 	"ByteDanceCamp8th/util/database"
+	"context"
+	"encoding/json"
 	"errors"
 	"strconv"
 )
@@ -62,11 +64,19 @@ func CreateCourse(course *model.Course) (id string, err error) {
 
 // GetCourse 根据课程ID查找课程
 func GetCourse(id string) (course model.Course, err error) {
-	result := database.DB.Where("courseid=?", id).Find(&course)
-	if result.Error != nil {
-		err = result.Error
-	} else if result.RowsAffected < 1 {
-		err = errors.New("查询不到该课程")
+	bys, _ := database.RedisClient.Get(context.TODO(), "course:"+id).Bytes()
+	if len(bys) > 0 {
+		json.Unmarshal(bys, &course)
+	} else {
+		result := database.DB.Where("courseid=?", id).Find(&course)
+		//使用json序列化
+		bytes, _ := json.Marshal(course)
+		database.RedisClient.Set(context.TODO(), "course:"+id, bytes, -1)
+		if result.Error != nil {
+			err = result.Error
+		} else if result.RowsAffected < 1 {
+			err = errors.New("查询不到该课程")
+		}
 	}
 	return
 }

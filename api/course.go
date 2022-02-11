@@ -9,8 +9,8 @@ import (
 
 // GetTeacherCourse 获取老师绑定的所有课程
 func GetTeacherCourse(c *gin.Context) {
-	var courseReq model.GetTeacherCourseRequest
-	if err := c.ShouldBindJSON(&courseReq); err != nil {
+	teacherId, ok := c.GetQuery("TeacherID")
+	if !ok {
 		c.JSON(http.StatusOK, model.GetTeacherCourseResponse{
 			Code: model.ParamInvalid,
 			Data: struct {
@@ -18,6 +18,8 @@ func GetTeacherCourse(c *gin.Context) {
 			}{CourseList: nil},
 		})
 	} else {
+		var courseReq model.GetTeacherCourseRequest
+		courseReq.TeacherID = teacherId
 		resp := service.GetTeacherCourseService(courseReq)
 		c.JSON(http.StatusOK, resp)
 	}
@@ -67,15 +69,16 @@ func CreateCourse(c *gin.Context) {
 
 // GetCourse 查询课程
 func GetCourse(c *gin.Context) {
-	var courseReq model.GetCourseRequest
-	if err := c.ShouldBindJSON(&courseReq); err != nil {
+	courseId, ok := c.GetQuery("CourseID")
+	if !ok {
 		c.JSON(http.StatusOK, model.GetCourseResponse{
 			Code: model.ParamInvalid,
 			Data: model.TCourse{},
 		})
 	} else {
+		var courseReq model.GetCourseRequest
+		courseReq.CourseID = courseId
 		courseService := service.GetCourseService(courseReq)
-		//不确定查询不到数据是否还返回http 200
 		c.JSON(http.StatusOK, courseService)
 	}
 }
