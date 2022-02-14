@@ -32,19 +32,19 @@ func (member *Member) CreateMember() error {
 
 // FindByUserID 通过用户ID查找用户
 func (member *Member) FindByUserID() (int, error) {
-	find := db.Find(member)
+	find := db.Select("nickname", "username", "usertype").Find(member)
 	return int(find.RowsAffected), find.Error
 }
 
 // FindByUsername 通过用户名查找用户
-func (member *Member) FindByUsername() error {
-	err := db.Where("username=?", member.Username).Find(member).Error
-	return err
+func (member *Member) FindByUsername() (int, error) {
+	find := db.Where("username=?", member.Username).Find(member)
+	return int(find.RowsAffected), find.Error
 }
 
 // GetMembers 获取用户列表
 func GetMembers(offset, limit int) (*[]Member, error) {
 	var members []Member
-	result := db.Limit(limit).Offset(offset).Where("state = ?", 0).Find(&members)
+	result := db.Limit(limit).Offset(offset).Where("state = ?", 0).Select("userid", "nickname", "username", "usertype").Find(&members)
 	return &members, result.Error
 }

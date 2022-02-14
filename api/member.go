@@ -41,12 +41,14 @@ func GetMember(c *gin.Context) {
 }
 
 func GetMemberList(c *gin.Context) {
+	//跳过 offset 条数据
 	offset, ok := c.GetQuery("Offset")
 	if !ok {
 		c.JSON(http.StatusOK, model.GetMemberListResponse{
 			Code: model.ParamInvalid,
 		})
 	}
+	//读取 limit 条数据
 	limit, ok := c.GetQuery("Limit")
 	if !ok {
 		c.JSON(http.StatusOK, model.GetMemberListResponse{

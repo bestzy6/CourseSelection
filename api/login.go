@@ -72,7 +72,7 @@ func Whoami(c *gin.Context) {
 		member := &model.Member{
 			Username: username.(string),
 		}
-		err = member.FindByUsername()
+		_, err = member.FindByUsername()
 		//返回数据库访问错误
 		if err != nil {
 			c.JSON(http.StatusOK, model.WhoAmIResponse{Code: model.UnknownError})

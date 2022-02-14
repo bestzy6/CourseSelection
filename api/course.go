@@ -13,9 +13,6 @@ func GetTeacherCourse(c *gin.Context) {
 	if !ok {
 		c.JSON(http.StatusOK, model.GetTeacherCourseResponse{
 			Code: model.ParamInvalid,
-			Data: struct {
-				CourseList []*model.TCourse
-			}{CourseList: nil},
 		})
 	} else {
 		var courseReq model.GetTeacherCourseRequest
@@ -57,9 +54,6 @@ func CreateCourse(c *gin.Context) {
 	if err := c.ShouldBindJSON(&courseReq); err != nil {
 		c.JSON(http.StatusOK, model.CreateCourseResponse{
 			Code: model.ParamInvalid,
-			Data: struct {
-				CourseID string
-			}{CourseID: "-1"},
 		})
 	} else {
 		resp := service.CreateCourseService(&courseReq)
@@ -73,7 +67,6 @@ func GetCourse(c *gin.Context) {
 	if !ok {
 		c.JSON(http.StatusOK, model.GetCourseResponse{
 			Code: model.ParamInvalid,
-			Data: model.TCourse{},
 		})
 	} else {
 		var courseReq model.GetCourseRequest
@@ -89,7 +82,6 @@ func Schedule(c *gin.Context) {
 	if err := c.ShouldBind(&sc); err != nil {
 		c.JSON(http.StatusOK, model.ScheduleCourseResponse{
 			Code: model.ParamInvalid,
-			Data: nil,
 		})
 		return
 	}

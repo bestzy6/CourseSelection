@@ -139,7 +139,7 @@ func GetMemberService(req *model.GetMemberRequest) *model.GetMemberResponse {
 	}
 	resp.Code = model.OK
 	resp.Data = model.TMember{
-		UserID:   strconv.Itoa(member.UserID),
+		UserID:   req.UserID,
 		Nickname: member.Nickname,
 		Username: member.Username,
 		UserType: member.UserType,
