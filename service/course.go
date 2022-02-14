@@ -6,7 +6,8 @@ import (
 )
 
 // GetTeacherCourseService 获取老师所绑定课程的服务
-func GetTeacherCourseService(req model.GetTeacherCourseRequest) (resp model.GetTeacherCourseResponse) {
+func GetTeacherCourseService(req *model.GetTeacherCourseRequest) *model.GetTeacherCourseResponse {
+	var resp model.GetTeacherCourseResponse
 	teacherId, _ := strconv.Atoi(req.TeacherID)
 	course := &model.Course{
 		TeacherID: teacherId,
@@ -25,11 +26,12 @@ func GetTeacherCourseService(req model.GetTeacherCourseRequest) (resp model.GetT
 	resp.Data = struct {
 		CourseList []*model.TCourse
 	}{CourseList: ans}
-	return
+	return &resp
 }
 
 // UnBindCourseService 解绑课程的服务
-func UnBindCourseService(req model.UnbindCourseRequest) (resp model.UnbindCourseResponse) {
+func UnBindCourseService(req *model.UnbindCourseRequest) *model.UnbindCourseResponse {
+	var resp model.UnbindCourseResponse
 	courseid, _ := strconv.Atoi(req.CourseID)
 	teacherid, _ := strconv.Atoi(req.TeacherID)
 	course := &model.Course{
@@ -41,11 +43,12 @@ func UnBindCourseService(req model.UnbindCourseRequest) (resp model.UnbindCourse
 	} else {
 		resp.Code = model.OK
 	}
-	return
+	return &resp
 }
 
 // BindCourseService 绑定课程与教师服务
-func BindCourseService(req model.BindCourseRequest) (resp model.BindCourseResponse) {
+func BindCourseService(req *model.BindCourseRequest) *model.BindCourseResponse {
+	var resp model.BindCourseResponse
 	courseid, _ := strconv.Atoi(req.CourseID)
 	teacherid, _ := strconv.Atoi(req.TeacherID)
 	course := &model.Course{
@@ -57,11 +60,12 @@ func BindCourseService(req model.BindCourseRequest) (resp model.BindCourseRespon
 	} else {
 		resp.Code = model.OK
 	}
-	return
+	return &resp
 }
 
 // CreateCourseService 创建课程的服务
-func CreateCourseService(req model.CreateCourseRequest) (resp model.CreateCourseResponse) {
+func CreateCourseService(req *model.CreateCourseRequest) *model.CreateCourseResponse {
+	var resp model.CreateCourseResponse
 	course := &model.Course{
 		Name:     req.Name,
 		CapTotal: req.Cap,
@@ -69,18 +73,19 @@ func CreateCourseService(req model.CreateCourseRequest) (resp model.CreateCourse
 	err := course.CreateCourse()
 	if err != nil {
 		resp.Code = model.UnknownError
-		return
+		return &resp
 	} else {
 		resp.Code = model.OK
 		resp.Data = struct {
 			CourseID string
 		}{strconv.Itoa(course.CourseID)}
-		return
+		return &resp
 	}
 }
 
 // GetCourseService 查询课程的服务
-func GetCourseService(req model.GetCourseRequest) (resp model.GetCourseResponse) {
+func GetCourseService(req *model.GetCourseRequest) *model.GetCourseResponse {
+	var resp model.GetCourseResponse
 	courseid, _ := strconv.Atoi(req.CourseID)
 	course := &model.Course{
 		CourseID: courseid,
@@ -88,7 +93,7 @@ func GetCourseService(req model.GetCourseRequest) (resp model.GetCourseResponse)
 	err := course.GetCourse()
 	if err != nil {
 		resp.Code = model.CourseNotExisted
-		return
+		return &resp
 	} else {
 		resp.Code = model.OK
 		resp.Data = model.TCourse{
@@ -96,7 +101,7 @@ func GetCourseService(req model.GetCourseRequest) (resp model.GetCourseResponse)
 			Name:      course.Name,
 			TeacherID: strconv.Itoa(course.TeacherID),
 		}
-		return
+		return &resp
 	}
 }
 

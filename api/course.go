@@ -20,7 +20,7 @@ func GetTeacherCourse(c *gin.Context) {
 	} else {
 		var courseReq model.GetTeacherCourseRequest
 		courseReq.TeacherID = teacherId
-		resp := service.GetTeacherCourseService(courseReq)
+		resp := service.GetTeacherCourseService(&courseReq)
 		c.JSON(http.StatusOK, resp)
 	}
 }
@@ -33,7 +33,7 @@ func UnBindCourse(c *gin.Context) {
 			Code: model.ParamInvalid,
 		})
 	} else {
-		resp := service.UnBindCourseService(courseReq)
+		resp := service.UnBindCourseService(&courseReq)
 		c.JSON(http.StatusOK, resp)
 	}
 }
@@ -46,7 +46,7 @@ func BindCourse(c *gin.Context) {
 			Code: model.ParamInvalid,
 		})
 	} else {
-		resp := service.BindCourseService(courseReq)
+		resp := service.BindCourseService(&courseReq)
 		c.JSON(http.StatusOK, resp)
 	}
 }
@@ -62,7 +62,7 @@ func CreateCourse(c *gin.Context) {
 			}{CourseID: "-1"},
 		})
 	} else {
-		resp := service.CreateCourseService(courseReq)
+		resp := service.CreateCourseService(&courseReq)
 		c.JSON(http.StatusOK, resp)
 	}
 }
@@ -78,7 +78,7 @@ func GetCourse(c *gin.Context) {
 	} else {
 		var courseReq model.GetCourseRequest
 		courseReq.CourseID = courseId
-		courseService := service.GetCourseService(courseReq)
+		courseService := service.GetCourseService(&courseReq)
 		c.JSON(http.StatusOK, courseService)
 	}
 }
