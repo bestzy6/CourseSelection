@@ -15,23 +15,22 @@ func NewRouter() *gin.Engine {
 	// 路由
 	g := r.Group("/api/v1")
 	// 成员管理
-	g.GET("/member/find")
-	g.POST("/member/create")
-	g.GET("/member")
-	g.GET("/member/list")
-	g.POST("/member/update")
-	g.POST("/member/delete")
+	g.POST("/member/create", api.CreateMember) //创建成员
+	g.GET("/member", api.GetMember)            //获取单个成员
+	g.GET("/member/list", api.GetMemberList)   //批量获取成员
+	g.POST("/member/update", api.UpdateMember) //更新成员
+	g.POST("/member/delete", api.DeleteMember) //删除成员
 	// 登录
-	g.POST("/auth/login", api.Login)
-	g.POST("/auth/logout", api.Logout)
-	g.GET("/auth/whoami", api.Whoami)
+	g.POST("/auth/login", api.Login)   //登入
+	g.POST("/auth/logout", api.Logout) //登出
+	g.GET("/auth/whoami", api.Whoami)  //获取个人信息
 	// 排课
-	g.POST("/course/create", api.CreateCourse)
-	g.GET("/course/get", api.GetCourse)
-	g.POST("/teacher/bind_course", api.BindCourse)
-	g.POST("/teacher/unbind_course", api.UnBindCourse)
-	g.GET("/teacher/get_course", api.GetTeacherCourse)
-	g.POST("/course/schedule", api.Schedule)
+	g.POST("/course/create", api.CreateCourse)         //创建课程
+	g.GET("/course/get", api.GetCourse)                //
+	g.POST("/teacher/bind_course", api.BindCourse)     //
+	g.POST("/teacher/unbind_course", api.UnBindCourse) //
+	g.GET("/teacher/get_course", api.GetTeacherCourse) //
+	g.POST("/course/schedule", api.Schedule)           //
 	// 抢课
 	g.POST("/student/book_course")
 	g.GET("/student/course")
