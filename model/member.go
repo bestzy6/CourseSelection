@@ -48,3 +48,10 @@ func GetMembers(offset, limit int) (*[]Member, error) {
 	result := db.Limit(limit).Offset(offset).Where("state = ?", 0).Select("userid", "nickname", "username", "usertype").Find(&members)
 	return &members, result.Error
 }
+
+// GetTypeByName 根据username获取usertype
+func GetTypeByName(username string) (UserType, int, error) {
+	var member Member
+	result := db.Where("username=?", username).Select("usertype").Find(&member)
+	return member.UserType, int(result.RowsAffected), result.Error
+}

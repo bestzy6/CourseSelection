@@ -2,6 +2,8 @@ package service
 
 import (
 	"ByteDanceCamp8th/model"
+	"github.com/gin-contrib/sessions"
+	"github.com/gin-gonic/gin"
 	"strconv"
 )
 
@@ -37,4 +39,22 @@ func LoginService(req *model.LoginRequest) *model.LoginResponse {
 		UserID string
 	}{UserID: strconv.Itoa(member.UserID)}
 	return &resp
+}
+
+// Auth 权限鉴定
+func Auth(c *gin.Context, input model.UserType) bool {
+	token, err := c.Cookie("camp-session")
+	if err != nil {
+		return false
+	}
+	session := sessions.Default(c)
+	username := session.Get(token)
+	usertype, rows, err := model.GetTypeByName(username.(string))
+	if err != nil || rows <= 0 {
+		return false
+	}
+	if usertype != input {
+		return false
+	}
+	return true
 }
