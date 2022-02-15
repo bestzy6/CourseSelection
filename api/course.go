@@ -10,7 +10,7 @@ import (
 // GetTeacherCourse 获取老师绑定的所有课程
 func GetTeacherCourse(c *gin.Context) {
 	var req model.GetTeacherCourseRequest
-	err := c.BindQuery(&req)
+	err := c.ShouldBindQuery(&req)
 	if err != nil {
 		c.JSON(http.StatusOK, model.GetTeacherCourseResponse{
 			Code: model.ParamInvalid,
@@ -63,7 +63,7 @@ func CreateCourse(c *gin.Context) {
 // GetCourse 查询课程
 func GetCourse(c *gin.Context) {
 	var req model.GetCourseRequest
-	err := c.BindQuery(&req)
+	err := c.ShouldBindQuery(&req)
 	if err != nil {
 		c.JSON(http.StatusOK, model.GetCourseResponse{
 			Code: model.ParamInvalid,
