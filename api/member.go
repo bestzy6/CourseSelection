@@ -37,13 +37,12 @@ func CreateMember(c *gin.Context) {
 
 func GetMember(c *gin.Context) {
 	var req model.GetMemberRequest
-	userid, ok := c.GetQuery("UserID")
-	if !ok {
+	err := c.BindQuery(&req)
+	if err != nil {
 		c.JSON(http.StatusOK, model.GetMemberResponse{
 			Code: model.ParamInvalid,
 		})
 	} else {
-		req.UserID = userid
 		c.JSON(http.StatusOK, service.GetMemberService(&req))
 	}
 }

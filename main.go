@@ -8,7 +8,7 @@ import (
 
 func main() {
 	r := server.NewRouter()
-	r.Run(":3000")
+	r.Run(":80")
 }
 
 //在训练营课程上，字节工程师并不建议使用init函数，然而我就是这么调皮

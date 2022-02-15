@@ -29,7 +29,6 @@ func Login(c *gin.Context) {
 			//使用uuid作为token
 			token := uuid.NewV4().String()
 			session.Set(token, req.Username)
-			fmt.Println(session.Get(token))
 			session.Save()
 			c.SetCookie("camp-session", token, 0, "/", "127.0.0.1", false, true)
 		}

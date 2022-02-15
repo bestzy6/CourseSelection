@@ -9,7 +9,11 @@ import (
 // DeleteMemberService 删除成员服务
 func DeleteMemberService(req *model.DeleteMemberRequest) *model.DeleteMemberResponse {
 	var resp model.DeleteMemberResponse
-	userid, _ := strconv.Atoi(req.UserID)
+	userid, err := strconv.Atoi(req.UserID)
+	if err != nil {
+		resp.Code = model.ParamInvalid
+		return &resp
+	}
 	member := model.Member{
 		UserID: userid,
 	}
@@ -40,12 +44,16 @@ func DeleteMemberService(req *model.DeleteMemberRequest) *model.DeleteMemberResp
 // UpdateMemberService 更新成员服务
 func UpdateMemberService(req *model.UpdateMemberRequest) *model.UpdateMemberResponse {
 	var resp model.UpdateMemberResponse
-	userid, _ := strconv.Atoi(req.UserID)
+	userid, err := strconv.Atoi(req.UserID)
+	if err != nil {
+		resp.Code = model.ParamInvalid
+		return &resp
+	}
 	member := model.Member{
 		UserID:   userid,
 		Nickname: req.Nickname,
 	}
-	err := member.UpdateMemberNickName()
+	err = member.UpdateMemberNickName()
 	if err != nil {
 		resp.Code = model.UnknownError
 	}
@@ -117,7 +125,11 @@ func CheckCreateMemberParamService(request *model.CreateMemberRequest) bool {
 // GetMemberService 获取成员服务
 func GetMemberService(req *model.GetMemberRequest) *model.GetMemberResponse {
 	var resp model.GetMemberResponse
-	userid, _ := strconv.Atoi(req.UserID)
+	userid, err := strconv.Atoi(req.UserID)
+	if err != nil {
+		resp.Code = model.ParamInvalid
+		return &resp
+	}
 	member := &model.Member{
 		UserID: userid,
 	}

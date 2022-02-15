@@ -8,7 +8,11 @@ import (
 // GetTeacherCourseService 获取老师所绑定课程的服务
 func GetTeacherCourseService(req *model.GetTeacherCourseRequest) *model.GetTeacherCourseResponse {
 	var resp model.GetTeacherCourseResponse
-	teacherId, _ := strconv.Atoi(req.TeacherID)
+	teacherId, err := strconv.Atoi(req.TeacherID)
+	if err != nil {
+		resp.Code = model.ParamInvalid
+		return &resp
+	}
 	course := &model.Course{
 		TeacherID: teacherId,
 	}
@@ -32,13 +36,21 @@ func GetTeacherCourseService(req *model.GetTeacherCourseRequest) *model.GetTeach
 // UnBindCourseService 解绑课程的服务
 func UnBindCourseService(req *model.UnbindCourseRequest) *model.UnbindCourseResponse {
 	var resp model.UnbindCourseResponse
-	courseid, _ := strconv.Atoi(req.CourseID)
-	teacherid, _ := strconv.Atoi(req.TeacherID)
+	courseid, err := strconv.Atoi(req.CourseID)
+	if err != nil {
+		resp.Code = model.ParamInvalid
+		return &resp
+	}
+	teacherid, err := strconv.Atoi(req.TeacherID)
+	if err != nil {
+		resp.Code = model.ParamInvalid
+		return &resp
+	}
 	course := &model.Course{
 		CourseID:  courseid,
 		TeacherID: teacherid,
 	}
-	if err := course.UnBindCourse(); err != nil {
+	if err = course.UnBindCourse(); err != nil {
 		resp.Code = model.CourseNotBind
 	} else {
 		resp.Code = model.OK
@@ -49,13 +61,22 @@ func UnBindCourseService(req *model.UnbindCourseRequest) *model.UnbindCourseResp
 // BindCourseService 绑定课程与教师服务
 func BindCourseService(req *model.BindCourseRequest) *model.BindCourseResponse {
 	var resp model.BindCourseResponse
-	courseid, _ := strconv.Atoi(req.CourseID)
-	teacherid, _ := strconv.Atoi(req.TeacherID)
+	courseid, err := strconv.Atoi(req.CourseID)
+	if err != nil {
+		resp.Code = model.ParamInvalid
+		return &resp
+	}
+	teacherid, err := strconv.Atoi(req.TeacherID)
+	if err != nil {
+		resp.Code = model.ParamInvalid
+		return &resp
+	}
+	//
 	course := &model.Course{
 		CourseID:  courseid,
 		TeacherID: teacherid,
 	}
-	if err := course.BindCourse(); err != nil {
+	if err = course.BindCourse(); err != nil {
 		resp.Code = model.CourseHasBound
 	} else {
 		resp.Code = model.OK
@@ -86,11 +107,15 @@ func CreateCourseService(req *model.CreateCourseRequest) *model.CreateCourseResp
 // GetCourseService 查询课程的服务
 func GetCourseService(req *model.GetCourseRequest) *model.GetCourseResponse {
 	var resp model.GetCourseResponse
-	courseid, _ := strconv.Atoi(req.CourseID)
+	courseid, err := strconv.Atoi(req.CourseID)
+	if err != nil {
+		resp.Code = model.ParamInvalid
+		return &resp
+	}
 	course := &model.Course{
 		CourseID: courseid,
 	}
-	err := course.GetCourse()
+	err = course.GetCourse()
 	if err != nil {
 		resp.Code = model.CourseNotExisted
 		return &resp

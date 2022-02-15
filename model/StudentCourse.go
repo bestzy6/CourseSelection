@@ -8,3 +8,8 @@ type StudentCourse struct {
 func (StudentCourse) TableName() string {
 	return "student_course"
 }
+
+//抢课
+
+//根据查课
+//func

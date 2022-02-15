@@ -26,13 +26,13 @@ func NewRouter() *gin.Engine {
 	g.GET("/auth/whoami", api.Whoami)  //获取个人信息
 	// 排课
 	g.POST("/course/create", api.CreateCourse)         //创建课程
-	g.GET("/course/get", api.GetCourse)                //
-	g.POST("/teacher/bind_course", api.BindCourse)     //
-	g.POST("/teacher/unbind_course", api.UnBindCourse) //
-	g.GET("/teacher/get_course", api.GetTeacherCourse) //
-	g.POST("/course/schedule", api.Schedule)           //
+	g.GET("/course/get", api.GetCourse)                //获取课程
+	g.POST("/teacher/bind_course", api.BindCourse)     //绑定课程
+	g.POST("/teacher/unbind_course", api.UnBindCourse) //解绑课程
+	g.GET("/teacher/get_course", api.GetTeacherCourse) //获取老师课程
+	g.POST("/course/schedule", api.Schedule)           //排课
 	// 抢课
-	g.POST("/student/book_course")
-	g.GET("/student/course")
+	//g.POST("/student/book_course", api.ChooseCourse) //学生抢课
+	//g.GET("/student/course", api.GetStudentCourse)   //获取学生课表
 	return r
 }
