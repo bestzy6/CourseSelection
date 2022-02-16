@@ -13,6 +13,7 @@ func (Member) TableName() string {
 	return "member"
 }
 
+// DeleteMember 删除成员
 func (member *Member) DeleteMember() error {
 	err := db.Model(member).Update("state", 1).Error
 	return err
@@ -40,6 +41,12 @@ func (member *Member) FindByUserID() (int, error) {
 func (member *Member) FindByUsername() (int, error) {
 	find := db.Where("username=?", member.Username).Find(member)
 	return int(find.RowsAffected), find.Error
+}
+
+// GetMemberStateByID 根据用户ID查询用户状态与类型
+func (member *Member) GetMemberStateByID() (int, error) {
+	result := db.Select("state", "usertype").Find(member)
+	return int(result.RowsAffected), result.Error
 }
 
 // GetMembers 获取用户列表

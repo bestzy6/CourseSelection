@@ -13,19 +13,29 @@ func GetTeacherCourseService(req *model.GetTeacherCourseRequest) *model.GetTeach
 		resp.Code = model.ParamInvalid
 		return &resp
 	}
+	//检验教师
+	teacher := &model.Member{
+		UserID: teacherId,
+	}
+	if errNo := checkTeacher(teacher); errNo != model.OK {
+		resp.Code = errNo
+		return &resp
+	}
+	//获取课程
 	course := &model.Course{
 		TeacherID: teacherId,
 	}
 	teacherCourse := course.GetTeacherCourse()
-	ans := make([]*model.TCourse, 0, len(teacherCourse))
-	for _, v := range teacherCourse {
+	ans := make([]*model.TCourse, len(teacherCourse))
+	for i, v := range teacherCourse {
 		thisCourse := &model.TCourse{
 			CourseID:  strconv.Itoa(v.CourseID),
 			Name:      v.Name,
 			TeacherID: req.TeacherID,
 		}
-		ans = append(ans, thisCourse)
+		ans[i] = thisCourse
 	}
+	//对resp赋值
 	resp.Code = model.OK
 	resp.Data = struct {
 		CourseList []*model.TCourse
@@ -46,12 +56,36 @@ func UnBindCourseService(req *model.UnbindCourseRequest) *model.UnbindCourseResp
 		resp.Code = model.ParamInvalid
 		return &resp
 	}
-	course := &model.Course{
-		CourseID:  courseid,
-		TeacherID: teacherid,
+	//对teacher进行检验
+	teacher := &model.Member{
+		UserID: teacherid,
 	}
-	if err = course.UnBindCourse(); err != nil {
+	if errNo := checkTeacher(teacher); errNo != model.OK {
+		resp.Code = errNo
+		return &resp
+	}
+	//检验课程是否绑定
+	course := &model.Course{
+		CourseID: courseid,
+	}
+	err = course.GetCourseBindState()
+	if err != nil {
+		resp.Code = model.UnknownError
+		return &resp
+	}
+	//teacherid==0说明课程没绑定
+	if course.TeacherID == 0 {
 		resp.Code = model.CourseNotBind
+		return &resp
+	}
+	//ID不相等说明没有权限
+	if course.TeacherID != teacherid {
+		resp.Code = model.PermDenied
+		return &resp
+	}
+	//解绑课程
+	if err = course.UnBindCourse(); err != nil {
+		resp.Code = model.UnknownError
 	} else {
 		resp.Code = model.OK
 	}
@@ -71,13 +105,31 @@ func BindCourseService(req *model.BindCourseRequest) *model.BindCourseResponse {
 		resp.Code = model.ParamInvalid
 		return &resp
 	}
-	//
-	course := &model.Course{
-		CourseID:  courseid,
-		TeacherID: teacherid,
+	//对teacher进行检验
+	teacher := &model.Member{
+		UserID: teacherid,
 	}
-	if err = course.BindCourse(); err != nil {
+	if errNo := checkTeacher(teacher); errNo != model.OK {
+		resp.Code = errNo
+		return &resp
+	}
+	//检验课程是否绑定
+	course := &model.Course{
+		CourseID: courseid,
+	}
+	err = course.GetCourseBindState()
+	if err != nil {
+		resp.Code = model.UnknownError
+		return &resp
+	}
+	if course.TeacherID != 0 {
 		resp.Code = model.CourseHasBound
+		return &resp
+	}
+	//绑定课程
+	course.TeacherID = teacherid
+	if err = course.BindCourse(); err != nil {
+		resp.Code = model.UnknownError
 	} else {
 		resp.Code = model.OK
 	}

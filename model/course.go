@@ -25,47 +25,27 @@ func (course *Course) GetTeacherCourse() []Course {
 
 // UnBindCourse 将课程与教师解绑
 func (course *Course) UnBindCourse() error {
-	var courseBind Course
-	err := db.Where("courseid=?", course.CourseID).Select("teacherid").Find(&courseBind).Error
-	if err != nil {
-		return err
-	}
-	//如果教师ID不为0说明已绑定
-	if courseBind.TeacherID != 0 {
-		err = db.Model(course).Update("teacherid", nil).Error
-		if err != nil {
-			return err
-		}
-		return nil
-	} else {
-		return errors.New("课程未绑定")
-	}
+	err := db.Model(course).Update("teacherid", nil).Error
+	return err
 }
 
 // BindCourse 将课程与教师绑定
 func (course *Course) BindCourse() error {
-	var courseBind Course
-	err := db.Where("courseid=?", course.CourseID).Select("teacherid").Find(&courseBind).Error
-	if err != nil {
-		return err
-	}
-	//如果教师ID为0说明未绑定
-	if courseBind.TeacherID == 0 {
-		err = db.Model(course).Update("teacherid", course.TeacherID).Error
-		if err != nil {
-			return err
-		}
-		return nil
-	} else {
-		return errors.New("课程已绑定")
-	}
+	err := db.Model(course).Update("teacherid", course.TeacherID).Error
+	return err
+}
+
+// GetCourseBindState 获取课程的绑定信息
+func (course *Course) GetCourseBindState() error {
+	err := db.Select("teacherid").Find(course).Error
+	return err
 }
 
 // CreateCourse 创建课程
-func (course *Course) CreateCourse() (err error) {
+func (course *Course) CreateCourse() error {
 	//插入时默认外键为空
-	err = db.Debug().Omit("teacherid").Create(course).Error
-	return
+	err := db.Debug().Omit("teacherid").Create(course).Error
+	return err
 }
 
 // GetCourse 根据课程ID查找课程

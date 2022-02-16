@@ -181,3 +181,18 @@ func GetMemberListService(req *model.GetMemberListRequest) *model.GetMemberListR
 	}
 	return &resp
 }
+
+// checkTeacher 校验Teacher信息
+func checkTeacher(teacher *model.Member) model.ErrNo {
+	//对teacher进行检验
+	row, err := teacher.GetMemberStateByID()
+	//数据库错误
+	if err != nil {
+		return model.UnknownError
+	}
+	//没有找到数据或者找到的数据不是老师
+	if row <= 0 || teacher.UserType != model.Teacher {
+		return model.UserNotExisted
+	}
+	return model.OK
+}
