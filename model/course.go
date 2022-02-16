@@ -1,9 +1,5 @@
 package model
 
-import (
-	"errors"
-)
-
 type Course struct {
 	CourseID  int    `gorm:"primaryKey;column:courseid"` //课程id
 	Name      string `gorm:"column:name"`                //课程名称
@@ -49,12 +45,7 @@ func (course *Course) CreateCourse() error {
 }
 
 // GetCourse 根据课程ID查找课程
-func (course *Course) GetCourse() (err error) {
-	result := db.Where("courseid=?", course.CourseID).Find(course)
-	if result.Error != nil {
-		err = result.Error
-	} else if result.RowsAffected < 1 {
-		err = errors.New("查询不到该课程")
-	}
-	return
+func (course *Course) GetCourse() (int, error) {
+	result := db.Select("courseid", "name", "teacherid").Find(course)
+	return int(result.RowsAffected), result.Error
 }

@@ -167,19 +167,23 @@ func GetCourseService(req *model.GetCourseRequest) *model.GetCourseResponse {
 	course := &model.Course{
 		CourseID: courseid,
 	}
-	err = course.GetCourse()
+	row, err := course.GetCourse()
 	if err != nil {
-		resp.Code = model.CourseNotExisted
-		return &resp
-	} else {
-		resp.Code = model.OK
-		resp.Data = model.TCourse{
-			CourseID:  strconv.Itoa(course.CourseID),
-			Name:      course.Name,
-			TeacherID: strconv.Itoa(course.TeacherID),
-		}
+		resp.Code = model.UnknownError
 		return &resp
 	}
+	if row <= 0 {
+		resp.Code = model.CourseNotExisted
+		return &resp
+	}
+	resp.Code = model.OK
+	resp.Data = model.TCourse{
+		CourseID:  strconv.Itoa(course.CourseID),
+		Name:      course.Name,
+		TeacherID: strconv.Itoa(course.TeacherID),
+	}
+	return &resp
+
 }
 
 // ScheduleCourse 求解器，使用的是匈牙利算法
