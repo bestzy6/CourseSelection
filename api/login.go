@@ -3,10 +3,8 @@ package api
 import (
 	"ByteDanceCamp8th/model"
 	"ByteDanceCamp8th/service"
-	"fmt"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
-	uuid "github.com/satori/go.uuid"
 	"net/http"
 	"strconv"
 )
@@ -17,9 +15,6 @@ func Login(c *gin.Context) {
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusOK, model.LoginResponse{
 			Code: model.ParamInvalid,
-			Data: struct {
-				UserID string
-			}{UserID: ""},
 		})
 	} else {
 		resp := service.LoginService(&req)
@@ -27,10 +22,10 @@ func Login(c *gin.Context) {
 		if resp.Code == model.OK {
 			session := sessions.Default(c)
 			//使用uuid作为token
-			token := uuid.NewV4().String()
-			session.Set(token, req.Username)
+			//token := uuid.NewV4().String()
+			session.Clear()
+			session.Set("user_name", req.Username)
 			session.Save()
-			c.SetCookie("camp-session", token, 0, "/", "127.0.0.1", false, true)
 		}
 		c.JSON(http.StatusOK, resp)
 	}
@@ -38,20 +33,18 @@ func Login(c *gin.Context) {
 
 // Logout 登出api
 func Logout(c *gin.Context) {
-	token, err := c.Cookie("camp-session")
-	//无法获取到token，用户未登录
-	if err != nil {
-		fmt.Println(err)
+	session := sessions.Default(c)
+	username := session.Get("user_name")
+	if username == nil {
 		c.JSON(http.StatusOK, model.LogoutResponse{
 			Code: model.LoginRequired,
 		})
 	} else {
 		//清除session
 		s := sessions.Default(c)
-		s.Delete(token)
-		//删除Cookie
-		c.SetCookie("camp-session", "", -1, "/", "127.0.0.1", false, true)
-		c.JSON(http.StatusOK, model.LoginResponse{
+		s.Clear()
+		s.Save()
+		c.JSON(http.StatusOK, model.LogoutResponse{
 			Code: model.OK,
 		})
 	}
@@ -59,19 +52,18 @@ func Logout(c *gin.Context) {
 
 // Whoami 是get方法
 func Whoami(c *gin.Context) {
-	token, err := c.Cookie("camp-session")
+	session := sessions.Default(c)
+	username := session.Get("user_name")
 	//无法获取到token，用户未登录
-	if err != nil {
+	if username == nil {
 		c.JSON(http.StatusOK, model.WhoAmIResponse{
 			Code: model.LoginRequired,
 		})
 	} else {
-		session := sessions.Default(c)
-		username := session.Get(token)
 		member := &model.Member{
 			Username: username.(string),
 		}
-		_, err = member.FindByUsername()
+		_, err := member.FindByUsername()
 		//返回数据库访问错误
 		if err != nil {
 			c.JSON(http.StatusOK, model.WhoAmIResponse{Code: model.UnknownError})

@@ -9,13 +9,6 @@ import (
 )
 
 func CreateMember(c *gin.Context) {
-	//鉴权
-	if ok := service.Auth(c, model.Admin); !ok {
-		c.JSON(http.StatusOK, model.CreateMemberResponse{
-			Code: model.PermDenied,
-		})
-		return
-	}
 	//创建成员业务部分
 	var req model.CreateMemberRequest
 	if err := c.ShouldBindJSON(&req); err != nil {

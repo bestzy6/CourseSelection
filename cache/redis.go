@@ -9,9 +9,9 @@ import (
 
 //以下是配置Redis数据库
 var (
-	addrRedis = "127.0.0.1:6379" //redis地址
-	pwd       = ""               //redis密码
-	dbnum     = 0                //redis数据库编号
+	addrRedis = "192.168.152.6:6379" //redis地址
+	pwd       = ""                   //redis密码
+	dbnum     = 0                    //redis数据库编号
 )
 
 var RedisClient *redis.Client
