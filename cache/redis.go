@@ -23,6 +23,7 @@ func InitRedis() {
 		Password:   pwd,
 		DB:         dbnum,
 		MaxRetries: 1,
+		PoolSize:   100,
 	})
 	timeout, cancelFunc := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancelFunc()

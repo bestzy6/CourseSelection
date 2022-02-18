@@ -1,7 +1,9 @@
 package service
 
 import (
+	"ByteDanceCamp8th/cache"
 	"ByteDanceCamp8th/model"
+	"log"
 	"regexp"
 	"strconv"
 )
@@ -14,9 +16,10 @@ func DeleteMemberService(req *model.DeleteMemberRequest) *model.DeleteMemberResp
 		resp.Code = model.ParamInvalid
 		return &resp
 	}
-	member := model.Member{
+	member := &model.Member{
 		UserID: userid,
 	}
+	//读取数据库中数据
 	row, err := member.FindByUserID()
 	//数据库错误
 	if err != nil {
@@ -37,6 +40,15 @@ func DeleteMemberService(req *model.DeleteMemberRequest) *model.DeleteMemberResp
 	if err != nil {
 		resp.Code = model.UnknownError
 	}
+	//删除缓存
+	row, err = cache.DelMemberByIdinRedis(member)
+	if err != nil {
+		log.Println("删除缓存出错！")
+	}
+	if row > 0 {
+		log.Println("删除缓存成功！")
+	}
+	//
 	resp.Code = model.OK
 	return &resp
 }
@@ -49,7 +61,7 @@ func UpdateMemberService(req *model.UpdateMemberRequest) *model.UpdateMemberResp
 		resp.Code = model.ParamInvalid
 		return &resp
 	}
-	member := model.Member{
+	member := &model.Member{
 		UserID:   userid,
 		Nickname: req.Nickname,
 	}
@@ -57,6 +69,15 @@ func UpdateMemberService(req *model.UpdateMemberRequest) *model.UpdateMemberResp
 	if err != nil {
 		resp.Code = model.UnknownError
 	}
+	//删除缓存
+	row, err := cache.DelMemberByIdinRedis(member)
+	if err != nil {
+		log.Println("删除缓存出错！")
+	}
+	if row > 0 {
+		log.Println("删除缓存成功！")
+	}
+	//返回结果
 	resp.Code = model.OK
 	return &resp
 }
@@ -133,7 +154,26 @@ func GetMemberService(req *model.GetMemberRequest) *model.GetMemberResponse {
 	member := &model.Member{
 		UserID: userid,
 	}
-	rows, err := member.FindByUserID()
+	//在缓存中查找数据
+	rows, err := cache.GetMemberByIDinRedis(member)
+	//redis出现错误
+	if err != nil {
+		resp.Code = model.UnknownError
+		return &resp
+	}
+	//找到缓存，能找到的缓存都认为是服务正常的用户
+	if rows > 0 {
+		resp.Code = model.OK
+		resp.Data = model.TMember{
+			UserID:   req.UserID,
+			Nickname: member.Nickname,
+			Username: member.Username,
+			UserType: member.UserType,
+		}
+		return &resp
+	}
+	//缓存中读取失败，从数据库中查找用户
+	rows, err = member.FindByUserID()
 	//数据库出现错误
 	if err != nil {
 		resp.Code = model.UnknownError
@@ -149,6 +189,7 @@ func GetMemberService(req *model.GetMemberRequest) *model.GetMemberResponse {
 		resp.Code = model.UserHasDeleted
 		return &resp
 	}
+	//一切正常
 	resp.Code = model.OK
 	resp.Data = model.TMember{
 		UserID:   req.UserID,
@@ -156,6 +197,12 @@ func GetMemberService(req *model.GetMemberRequest) *model.GetMemberResponse {
 		Username: member.Username,
 		UserType: member.UserType,
 	}
+	//将成员加入缓存中
+	err = cache.AddMemberInRedis(member)
+	if err != nil {
+		log.Println("添加成员缓存失败！", err)
+	}
+	//返回结果
 	return &resp
 }
 

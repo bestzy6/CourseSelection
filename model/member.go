@@ -33,7 +33,7 @@ func (member *Member) CreateMember() error {
 
 // FindByUserID 通过用户ID查找用户
 func (member *Member) FindByUserID() (int, error) {
-	find := db.Select("nickname", "username", "usertype").Find(member)
+	find := db.Select("nickname", "username", "usertype", "state").Find(member)
 	return int(find.RowsAffected), find.Error
 }
 
