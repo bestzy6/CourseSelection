@@ -1,7 +1,11 @@
 package service
 
 import (
+	"ByteDanceCamp8th/cache"
 	"ByteDanceCamp8th/model"
+	"ByteDanceCamp8th/util"
+	"github.com/go-redis/redis/v8"
+	"log"
 	"strconv"
 )
 
@@ -68,7 +72,8 @@ func UnBindCourseService(req *model.UnbindCourseRequest) *model.UnbindCourseResp
 	course := &model.Course{
 		CourseID: courseid,
 	}
-	err = course.GetCourseBindState()
+	//从缓存中获取课程的绑定信息
+	err = cache.GetCourseStateInRedis(course)
 	if err != nil {
 		resp.Code = model.UnknownError
 		return &resp
@@ -83,12 +88,16 @@ func UnBindCourseService(req *model.UnbindCourseRequest) *model.UnbindCourseResp
 		resp.Code = model.PermDenied
 		return &resp
 	}
-	//解绑课程
-	if err = course.UnBindCourse(); err != nil {
+	//修改缓存，解绑课程
+	err = cache.UpdateCourseInRedis(course, false)
+	if err != nil {
+		log.Println("修改缓存，解绑课程出错！", err)
 		resp.Code = model.UnknownError
-	} else {
-		resp.Code = model.OK
+		return &resp
 	}
+	resp.Code = model.OK
+	//写入解绑课程消息队列
+	util.UnBindCourseMQ <- course
 	return &resp
 }
 
@@ -117,7 +126,8 @@ func BindCourseService(req *model.BindCourseRequest) *model.BindCourseResponse {
 	course := &model.Course{
 		CourseID: courseid,
 	}
-	err = course.GetCourseBindState()
+	//从缓存中获取课程的绑定信息
+	err = cache.GetCourseStateInRedis(course)
 	if err != nil {
 		resp.Code = model.UnknownError
 		return &resp
@@ -126,13 +136,18 @@ func BindCourseService(req *model.BindCourseRequest) *model.BindCourseResponse {
 		resp.Code = model.CourseHasBound
 		return &resp
 	}
-	//绑定课程
 	course.TeacherID = teacherid
-	if err = course.BindCourse(); err != nil {
+	//修改redis缓存，绑定课程
+	err = cache.UpdateCourseInRedis(course, true)
+	//缓存产生错误
+	if err != nil {
+		log.Println("修改缓存,绑定课程出错！", err)
 		resp.Code = model.UnknownError
-	} else {
-		resp.Code = model.OK
+		return &resp
 	}
+	resp.Code = model.OK
+	//
+	util.BindCourseMQ <- course
 	return &resp
 }
 
@@ -143,17 +158,27 @@ func CreateCourseService(req *model.CreateCourseRequest) *model.CreateCourseResp
 		Name:     req.Name,
 		CapTotal: req.Cap,
 	}
-	err := course.CreateCourse()
+	id, err := cache.GetNewId("course")
+	if err != nil {
+		log.Println("获取课程ID失败", err)
+		resp.Code = model.UnknownError
+		return &resp
+	}
+	course.CourseID = id
+	//将数据添加至redis缓存
+	err = cache.AddCourseInRedis(course)
 	if err != nil {
 		resp.Code = model.UnknownError
 		return &resp
-	} else {
-		resp.Code = model.OK
-		resp.Data = struct {
-			CourseID string
-		}{strconv.Itoa(course.CourseID)}
-		return &resp
 	}
+	//没有错误，赋值给resp
+	resp.Code = model.OK
+	resp.Data = struct {
+		CourseID string
+	}{strconv.Itoa(course.CourseID)}
+	//将增加信息加入消息队列
+	util.CreateCourseMQ <- course
+	return &resp
 }
 
 // GetCourseService 查询课程的服务
@@ -167,26 +192,46 @@ func GetCourseService(req *model.GetCourseRequest) *model.GetCourseResponse {
 	course := &model.Course{
 		CourseID: courseid,
 	}
-	row, err := course.GetCourse()
+	//从缓存中获取课程
+	err = cache.GetCourseInRedis(course)
+	//课程获取不到
+	if err == redis.Nil {
+		resp.Code = model.CourseNotExisted
+		return &resp
+	}
+	//获取缓存数据出错
 	if err != nil {
 		resp.Code = model.UnknownError
 		return &resp
 	}
-	if row <= 0 {
-		resp.Code = model.CourseNotExisted
-		return &resp
-	}
 	resp.Code = model.OK
 	resp.Data = model.TCourse{
-		CourseID:  strconv.Itoa(course.CourseID),
+		CourseID:  req.CourseID,
 		Name:      course.Name,
 		TeacherID: strconv.Itoa(course.TeacherID),
 	}
 	return &resp
-
+	//从本项目的逻辑来看，不太可能会执行以下的代码
+	//缓存中没有数据，从数据库中获取课程
+	//row, err = course.GetCourse()
+	//if err != nil {
+	//	resp.Code = model.UnknownError
+	//	return &resp
+	//}
+	//if row <= 0 {
+	//	resp.Code = model.CourseNotExisted
+	//	return &resp
+	//}
+	//resp.Code = model.OK
+	//resp.Data = model.TCourse{
+	//	CourseID:  strconv.Itoa(course.CourseID),
+	//	Name:      course.Name,
+	//	TeacherID: strconv.Itoa(course.TeacherID),
+	//}
+	//return &resp
 }
 
-// ScheduleCourse 求解器，使用的是匈牙利算法
+// ScheduleCourse 求解器，匈牙利算法
 func ScheduleCourse(scr *model.ScheduleCourseRequest) *model.ScheduleCourseResponse {
 	ans := new(model.ScheduleCourseResponse)
 	ans.Code = model.OK

@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/go-redis/redis/v8"
 	"log"
+	"strconv"
 	"time"
 )
 
@@ -32,4 +33,34 @@ func InitRedis() {
 		log.Fatalln("link redis failed:", err)
 	}
 	RedisClient = client
+}
+
+// GetNewId 从redis中获取一个自增的ID,idType为键的后缀名
+func GetNewId(idType string) (int, error) {
+	key := "id_" + idType
+	//id_key变量作为存储的kv对的key,如果变量不存在，设置id_key值为1并返回,如果变量存在，值加1后返回
+	luaId := redis.NewScript(`
+local id_key = KEYS[1]
+local current = redis.call('get',id_key)
+if current == false then
+    redis.call('set',id_key,1)
+    return '1'
+end
+--redis.log(redis.LOG_NOTICE,' current:'..current..':')
+local result =  tonumber(current)+1
+--redis.log(redis.LOG_NOTICE,' result:'..result..':')
+redis.call('set',id_key,result)
+return tostring(result)
+	`)
+	//执行lua脚本
+	n, err := luaId.Run(context.TODO(), RedisClient, []string{key}, 2).Result()
+	if err != nil {
+		return -1, err
+	}
+	//
+	retint, err := strconv.Atoi(n.(string))
+	if err != nil {
+		return -1, err
+	}
+	return retint, nil
 }

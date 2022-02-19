@@ -3,6 +3,7 @@ package service
 import (
 	"ByteDanceCamp8th/cache"
 	"ByteDanceCamp8th/model"
+	"fmt"
 	"log"
 	"regexp"
 	"strconv"
@@ -231,8 +232,16 @@ func GetMemberListService(req *model.GetMemberListRequest) *model.GetMemberListR
 
 // checkTeacher 校验Teacher信息
 func checkTeacher(teacher *model.Member) model.ErrNo {
-	//对teacher进行检验
-	row, err := teacher.GetMemberStateByID()
+	//先在缓存中进行查找
+	row, err := cache.GetMemberByIDinRedis(teacher)
+	if err != nil {
+		fmt.Println("缓存中校验信息失败！", err)
+	}
+	if row > 0 && teacher.UserType == model.Teacher {
+		return model.OK
+	}
+	//缓存搜索无效，在数据库中对teacher进行检验
+	row, err = teacher.GetMemberStateByID()
 	//数据库错误
 	if err != nil {
 		return model.UnknownError
