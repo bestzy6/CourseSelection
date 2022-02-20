@@ -38,8 +38,8 @@ func NewRouter() *gin.Engine {
 		g.GET("/teacher/get_course", api.GetTeacherCourse) //获取老师课程
 		g.POST("/course/schedule", api.Schedule)           //排课
 		// 抢课
-		//g.POST("/student/book_course", api.ChooseCourse) //学生抢课
-		//g.GET("/student/course", api.GetStudentCourse)   //获取学生课表
+		g.POST("/student/book_course", api.ChooseCourse) //学生抢课
+		g.GET("/student/course", api.GetStudentCourse)   //获取学生课表
 	}
 	return r
 }

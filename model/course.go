@@ -5,12 +5,15 @@ type Course struct {
 	Name      string `gorm:"column:name" redis:"name"`            //课程名称
 	TeacherID int    `gorm:"column:teacherid" redis:"teacher_id"` //授课教师id
 	CapTotal  int    `gorm:"column:cap_total" reids:"cap_total"`  //课程容量
-	CapUsed   int    `gorm:"column:cap_used" redis:"cap_used"`    //课程已选人数
+	CapLeft   int    `gorm:"column:cap_left" redis:"cap_left"`    //课程可选人数
 }
 
 func (Course) TableName() string {
 	return "course"
 }
+
+// CourseFull 存储已经选满的课程
+var CourseFull = make(map[int]bool, 10)
 
 // GetTeacherCourse 获取老师绑定的所有课程
 func (course *Course) GetTeacherCourse() []Course {
@@ -40,7 +43,7 @@ func (course *Course) GetCourseBindState() error {
 // CreateCourse 创建课程
 func (course *Course) CreateCourse() error {
 	//插入时默认外键为空
-	err := db.Debug().Omit("teacherid").Create(course).Error
+	err := db.Omit("teacherid").Create(course).Error
 	return err
 }
 

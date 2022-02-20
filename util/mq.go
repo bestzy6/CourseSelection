@@ -9,10 +9,12 @@ var (
 	CreateCourseMQ chan *model.Course
 	UnBindCourseMQ chan *model.Course
 	BindCourseMQ   chan *model.Course
+	ChooseCourseMQ chan *model.StudentCourse
 )
 
 //通道的缓存最大值
-const maxMessageNum = 1000
+const maxMessageNum = 2000
+const maxRcMessageNum = 20000
 
 // InitMQ 初始化消息队列并启动监听
 func InitMQ() {
@@ -20,10 +22,25 @@ func InitMQ() {
 	CreateCourseMQ = make(chan *model.Course, maxMessageNum)
 	BindCourseMQ = make(chan *model.Course, maxMessageNum)
 	UnBindCourseMQ = make(chan *model.Course, maxMessageNum)
-	//启动监听
+	ChooseCourseMQ = make(chan *model.StudentCourse, maxRcMessageNum)
+	//启动监听线程
 	go listenCreateCourseMQ()
 	go listenBindCourseMQ()
 	go listenUnBindCourseMQ()
+	go listenChooseCourseMQ()
+}
+
+//监听抢课的消息队列
+func listenChooseCourseMQ() {
+	for {
+		sc := <-ChooseCourseMQ
+		err := sc.SelectCourse()
+		if err != nil {
+			log.Println("数据库中添加抢课信息失败！", err)
+		} else {
+			log.Println("数据库中添加抢课信息成功！Info:", sc.MemberId, "-", sc.CourseId)
+		}
+	}
 }
 
 //监听创建课程的消息队列

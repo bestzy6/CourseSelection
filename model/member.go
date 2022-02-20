@@ -13,6 +13,9 @@ func (Member) TableName() string {
 	return "member"
 }
 
+// StudentList 存放学生的映射，用以判断学生是否存在。
+var StudentList = make(map[int]bool, 10)
+
 // DeleteMember 删除成员
 func (member *Member) DeleteMember() error {
 	err := db.Model(member).Update("state", 1).Error

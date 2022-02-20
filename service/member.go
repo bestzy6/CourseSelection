@@ -49,7 +49,9 @@ func DeleteMemberService(req *model.DeleteMemberRequest) *model.DeleteMemberResp
 	if row > 0 {
 		log.Println("删除缓存成功！")
 	}
-	//
+	//删除映射，如果不存在，以下delete相当于空操作
+	delete(model.StudentList, userid)
+	//返回结果
 	resp.Code = model.OK
 	return &resp
 }
@@ -101,6 +103,10 @@ func CreateMemberService(req *model.CreateMemberRequest) *model.CreateMemberResp
 		resp.Data = struct {
 			UserID string
 		}{UserID: strconv.Itoa(member.UserID)}
+	}
+	//如果是学生，添加到本地映射中
+	if req.UserType == model.Student {
+		model.StudentList[member.UserID] = true
 	}
 	return &resp
 }

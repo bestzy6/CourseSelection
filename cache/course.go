@@ -7,6 +7,12 @@ import (
 	"strconv"
 )
 
+// GetCourseExist 根据课程ID判断课程是否存在，返回int64类型，如果为1则表示存在
+func GetCourseExist(cid int) int64 {
+	couseid := "c_" + strconv.Itoa(cid)
+	return RedisClient.Exists(context.TODO(), couseid).Val()
+}
+
 // GetCourseStateInRedis 从缓存中获取课程的绑定信息
 func GetCourseStateInRedis(course *model.Course) error {
 	courseid := "c_" + strconv.Itoa(course.CourseID)
@@ -19,7 +25,7 @@ func GetCourseStateInRedis(course *model.Course) error {
 	return nil
 }
 
-// GetCourseInRedis 从缓存中获取数据，返回找到的个数以及错误
+// GetCourseInRedis 从缓存中获取数据，返回错误
 func GetCourseInRedis(course *model.Course) error {
 	courseid := "c_" + strconv.Itoa(course.CourseID)
 	result := RedisClient.HGetAll(context.TODO(), courseid)
@@ -56,7 +62,7 @@ func AddCourseInRedis(course *model.Course) error {
 		"name":       course.Name,
 		"teacher_id": course.TeacherID,
 		"cap_total":  course.CapTotal,
-		"cap_used":   course.CapUsed,
+		"cap_left":   course.CapLeft,
 	}).Err()
 	return err
 }

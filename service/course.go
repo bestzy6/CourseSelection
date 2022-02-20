@@ -18,18 +18,15 @@ func GetTeacherCourseService(req *model.GetTeacherCourseRequest) *model.GetTeach
 		return &resp
 	}
 	//检验教师
-	teacher := &model.Member{
-		UserID: teacherId,
-	}
+	teacher := &model.Member{UserID: teacherId}
 	if errNo := checkTeacher(teacher); errNo != model.OK {
 		resp.Code = errNo
 		return &resp
 	}
 	//获取课程
-	course := &model.Course{
-		TeacherID: teacherId,
-	}
+	course := &model.Course{TeacherID: teacherId}
 	teacherCourse := course.GetTeacherCourse()
+	//
 	ans := make([]*model.TCourse, len(teacherCourse))
 	for i, v := range teacherCourse {
 		thisCourse := &model.TCourse{
@@ -69,11 +66,13 @@ func UnBindCourseService(req *model.UnbindCourseRequest) *model.UnbindCourseResp
 		return &resp
 	}
 	//检验课程是否绑定
-	course := &model.Course{
-		CourseID: courseid,
-	}
+	course := &model.Course{CourseID: courseid}
 	//从缓存中获取课程的绑定信息
 	err = cache.GetCourseStateInRedis(course)
+	if err == redis.Nil {
+		resp.Code = model.CourseNotExisted
+		return &resp
+	}
 	if err != nil {
 		resp.Code = model.UnknownError
 		return &resp
@@ -115,19 +114,19 @@ func BindCourseService(req *model.BindCourseRequest) *model.BindCourseResponse {
 		return &resp
 	}
 	//对teacher进行检验
-	teacher := &model.Member{
-		UserID: teacherid,
-	}
+	teacher := &model.Member{UserID: teacherid}
 	if errNo := checkTeacher(teacher); errNo != model.OK {
 		resp.Code = errNo
 		return &resp
 	}
 	//检验课程是否绑定
-	course := &model.Course{
-		CourseID: courseid,
-	}
+	course := &model.Course{CourseID: courseid}
 	//从缓存中获取课程的绑定信息
 	err = cache.GetCourseStateInRedis(course)
+	if err == redis.Nil {
+		resp.Code = model.CourseNotExisted
+		return &resp
+	}
 	if err != nil {
 		resp.Code = model.UnknownError
 		return &resp
@@ -157,6 +156,7 @@ func CreateCourseService(req *model.CreateCourseRequest) *model.CreateCourseResp
 	course := &model.Course{
 		Name:     req.Name,
 		CapTotal: req.Cap,
+		CapLeft:  req.Cap,
 	}
 	id, err := cache.GetNewId("course")
 	if err != nil {
@@ -189,9 +189,7 @@ func GetCourseService(req *model.GetCourseRequest) *model.GetCourseResponse {
 		resp.Code = model.ParamInvalid
 		return &resp
 	}
-	course := &model.Course{
-		CourseID: courseid,
-	}
+	course := &model.Course{CourseID: courseid}
 	//从缓存中获取课程
 	err = cache.GetCourseInRedis(course)
 	//课程获取不到
@@ -211,24 +209,6 @@ func GetCourseService(req *model.GetCourseRequest) *model.GetCourseResponse {
 		TeacherID: strconv.Itoa(course.TeacherID),
 	}
 	return &resp
-	//从本项目的逻辑来看，不太可能会执行以下的代码
-	//缓存中没有数据，从数据库中获取课程
-	//row, err = course.GetCourse()
-	//if err != nil {
-	//	resp.Code = model.UnknownError
-	//	return &resp
-	//}
-	//if row <= 0 {
-	//	resp.Code = model.CourseNotExisted
-	//	return &resp
-	//}
-	//resp.Code = model.OK
-	//resp.Data = model.TCourse{
-	//	CourseID:  strconv.Itoa(course.CourseID),
-	//	Name:      course.Name,
-	//	TeacherID: strconv.Itoa(course.TeacherID),
-	//}
-	//return &resp
 }
 
 // ScheduleCourse 求解器，匈牙利算法
