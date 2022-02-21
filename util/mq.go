@@ -22,6 +22,7 @@ func InitMQ() {
 	CreateCourseMQ = make(chan *model.Course, maxMessageNum)
 	BindCourseMQ = make(chan *model.Course, maxMessageNum)
 	UnBindCourseMQ = make(chan *model.Course, maxMessageNum)
+	//
 	ChooseCourseMQ = make(chan *model.StudentCourse, maxRcMessageNum)
 	//启动监听线程
 	go listenCreateCourseMQ()

@@ -31,9 +31,3 @@ func (sc *StudentCourse) SelectCourse() error {
 	})
 	return err
 }
-
-//// GetCourseBySid 根据学生ID查课
-//func (sc *StudentCourse) GetCourseBySid() (*[]Course, error) {
-//	tx := db.Table("course").Select("course.courseid,course.name,course.teacherid")
-//	tx.Joins()
-//}

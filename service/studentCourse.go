@@ -5,12 +5,47 @@ import (
 	"ByteDanceCamp8th/model"
 	"ByteDanceCamp8th/util"
 	"strconv"
+	"strings"
 )
 
 // GetStudentCourseService 获取学生已选课列表的服务
 func GetStudentCourseService(req *model.GetStudentCourseRequest) *model.GetStudentCourseResponse {
 	var resp model.GetStudentCourseResponse
-	//
+	//验证ID有效性
+	sid, err := strconv.Atoi(req.StudentID)
+	if err != nil {
+		resp.Code = model.ParamInvalid
+		return &resp
+	}
+	//查询学生是否存在
+	if !model.StudentList[sid] {
+		resp.Code = model.StudentNotExisted
+		return &resp
+	}
+	sc := &model.StudentCourse{MemberId: sid}
+	//查询学生课程
+	courses := cache.StudentCourseInfo(sc)
+	//赋值给ans
+	ans := make([]model.TCourse, len(courses))
+	var c model.Course
+	for i, v := range courses {
+		//去除掉课程key的前缀c_
+		prefix := strings.TrimPrefix(v, "c_")
+		c.CourseID, _ = strconv.Atoi(prefix)
+		err = cache.GetCourseInRedis(&c)
+		if err != nil {
+			resp.Code = model.UnknownError
+			return &resp
+		}
+		//
+		ans[i] = model.TCourse{
+			CourseID:  prefix,
+			Name:      c.Name,
+			TeacherID: strconv.Itoa(c.TeacherID),
+		}
+	}
+	resp.Code = model.OK
+	resp.Data = struct{ CourseList []model.TCourse }{CourseList: ans}
 	return &resp
 }
 
@@ -40,10 +75,6 @@ func ChooseCourseService(req *model.BookCourseRequest) *model.BookCourseResponse
 	}
 	//抢课
 	if errNo := killCourse(sc); errNo != model.OK {
-		//如果课程已经满则加入map
-		if errNo == model.CourseNotAvailable {
-			model.CourseFull[sc.CourseId] = true
-		}
 		resp.Code = errNo
 		return &resp
 	}
@@ -66,6 +97,8 @@ func killCourse(sc *model.StudentCourse) model.ErrNo {
 	case nil:
 		return model.OK
 	case cache.ZeroLeftError:
+		//如果是课程已满错误码，则加入map
+		model.CourseFull[sc.CourseId] = true
 		return model.CourseNotAvailable
 	default:
 		return model.CourseNotAvailable
@@ -82,7 +115,7 @@ func checkStuCou(sid, cid int) model.ErrNo {
 	if cache.GetCourseExist(cid) < 1 {
 		return model.CourseNotExisted
 	}
-	//检验课程是否已满，本地内存中查询
+	//检验课程是否已满，本地内存中查询，要先判断课程是否存在再判断是否已经满
 	if model.CourseFull[cid] {
 		return model.CourseNotAvailable
 	}

@@ -25,6 +25,12 @@ func (e HasBindCourseError) Error() string {
 	return "HasBindCourseError"
 }
 
+// StudentCourseInfo 获取学生的选课信息
+func StudentCourseInfo(sc *model.StudentCourse) []string {
+	sid := "s_" + strconv.Itoa(sc.MemberId)
+	return RedisClient.SMembers(context.TODO(), sid).Val()
+}
+
 // StudentHasCourse 判断学生是否选择了该课程
 func StudentHasCourse(sc *model.StudentCourse) bool {
 	sid, cid := "s_"+strconv.Itoa(sc.MemberId), "c_"+strconv.Itoa(sc.CourseId)
