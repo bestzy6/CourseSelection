@@ -4,7 +4,6 @@ import (
 	"ByteDanceCamp8th/model"
 	"context"
 	"errors"
-	"fmt"
 	"github.com/go-redis/redis/v8"
 	"strconv"
 )
@@ -49,7 +48,7 @@ func ChooseCourseInRedis(sc *model.StudentCourse) error {
 		if capLeft <= 0 {
 			return ZeroLeftError{}
 		}
-		// 乐观锁，库存减一
+		// 库存减一
 		_, err = tx.TxPipelined(context.TODO(), func(pipe redis.Pipeliner) error {
 			pipe.HSet(context.TODO(), cid, "cap_left", capLeft-1)
 			pipe.SAdd(context.TODO(), sid, cid)
@@ -61,16 +60,17 @@ func ChooseCourseInRedis(sc *model.StudentCourse) error {
 	var err error
 	for i := 0; i < 3; i++ {
 		err = RedisClient.Watch(context.TODO(), txf, cid)
-		//没有错误，直接返回，事务错误，多试几次
+		//没有错误，直接返回
 		if err == nil {
 			return nil
 		} else if errors.Is(err, redis.TxFailedErr) {
+			//事务错误，继续尝试
 			continue
 		} else if errors.Is(err, ZeroLeftError{}) {
-			fmt.Println("课程已满")
+			//课程已满
 			return err
 		}
-		fmt.Println("抢课失败！")
+		//抢课失败
 		return err
 	}
 	return err

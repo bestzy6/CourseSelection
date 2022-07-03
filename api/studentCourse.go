@@ -7,7 +7,7 @@ import (
 	"net/http"
 )
 
-// GetStudentCourse 获取学生课表
+// GetStudentCourse 获取学生课表api
 func GetStudentCourse(c *gin.Context) {
 	var req model.GetStudentCourseRequest
 	// 处理无效参数情况
@@ -20,7 +20,7 @@ func GetStudentCourse(c *gin.Context) {
 	}
 }
 
-// ChooseCourse  学生抢课
+// ChooseCourse  学生抢课api
 func ChooseCourse(c *gin.Context) {
 	var req model.BookCourseRequest
 	// 处理无效参数情况

@@ -12,7 +12,7 @@ func main() {
 	r.Run(":8080")
 }
 
-//在训练营课程上，字节工程师并不建议使用init函数，然而我就是这么调皮
+//在训练营课程上，字节工程师并不建议使用init函数
 func init() {
 	model.InitMysql()
 	cache.InitRedis()

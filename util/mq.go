@@ -14,7 +14,6 @@ var (
 
 //通道的缓存最大值
 const maxMessageNum = 2000
-const maxRcMessageNum = 20000
 
 // InitMQ 初始化消息队列并启动监听
 func InitMQ() {
@@ -22,8 +21,7 @@ func InitMQ() {
 	CreateCourseMQ = make(chan *model.Course, maxMessageNum)
 	BindCourseMQ = make(chan *model.Course, maxMessageNum)
 	UnBindCourseMQ = make(chan *model.Course, maxMessageNum)
-	//
-	ChooseCourseMQ = make(chan *model.StudentCourse, maxRcMessageNum)
+	ChooseCourseMQ = make(chan *model.StudentCourse, maxMessageNum)
 	//启动监听线程
 	go listenCreateCourseMQ()
 	go listenBindCourseMQ()

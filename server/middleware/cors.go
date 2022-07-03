@@ -11,7 +11,7 @@ func Cors() gin.HandlerFunc {
 	config.AllowMethods = []string{"GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"}
 	config.AllowHeaders = []string{"Origin", "Content-Length", "Content-Type", "Cookie"}
 	if gin.Mode() == gin.ReleaseMode {
-		// 生产环境需要配置跨域域名，否则403
+		//生产环境需要配置跨域域名，否则403
 		//这里应该需要修改
 		config.AllowOrigins = []string{"http://www.example.com"}
 	} else {
