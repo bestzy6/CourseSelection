@@ -13,7 +13,7 @@ var (
 )
 
 //通道的缓存最大值
-const maxMessageNum = 2000
+const maxMessageNum = 20000
 
 // InitMQ 初始化消息队列并启动监听
 func InitMQ() {

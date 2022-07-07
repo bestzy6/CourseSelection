@@ -106,7 +106,7 @@ func CreateMemberService(req *model.CreateMemberRequest) *model.CreateMemberResp
 	}
 	//如果是学生，添加到本地映射中
 	if req.UserType == model.Student {
-		model.StudentList[member.UserID] = true
+		model.StudentList[member.UserID] = struct{}{}
 	}
 	return &resp
 }

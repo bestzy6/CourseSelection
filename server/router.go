@@ -20,12 +20,19 @@ func NewRouter() *gin.Engine {
 		admin.Use(middleware.AuthUser(model.Admin))
 		{
 			// 成员管理
-			admin.POST("/member/create", api.CreateMember) //创建成员
-			admin.GET("/member", api.GetMember)            //获取单个成员
-			admin.GET("/member/list", api.GetMemberList)   //批量获取成员
-			admin.POST("/member/update", api.UpdateMember) //更新成员
-			admin.POST("/member/delete", api.DeleteMember) //删除成员
+			//admin.POST("/member/create", api.CreateMember) //创建成员
+			//admin.GET("/member", api.GetMember)            //获取单个成员
+			//admin.GET("/member/list", api.GetMemberList)   //批量获取成员
+			//admin.POST("/member/update", api.UpdateMember) //更新成员
+			//admin.POST("/member/delete", api.DeleteMember) //删除成员
 		}
+		// 成员管理（无鉴权）
+		g.POST("/member/create", api.CreateMember) //创建成员
+		g.GET("/member", api.GetMember)            //获取单个成员
+		g.GET("/member/list", api.GetMemberList)   //批量获取成员
+		g.POST("/member/update", api.UpdateMember) //更新成员
+		g.POST("/member/delete", api.DeleteMember) //删除成员
+
 		// 登录
 		g.POST("/auth/login", api.Login)   //登入
 		g.POST("/auth/logout", api.Logout) //登出

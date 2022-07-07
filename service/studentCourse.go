@@ -18,7 +18,7 @@ func GetStudentCourseService(req *model.GetStudentCourseRequest) *model.GetStude
 		return &resp
 	}
 	//查询学生是否存在
-	if !model.StudentList[sid] {
+	if _, ok := model.StudentList[sid]; !ok {
 		resp.Code = model.StudentNotExisted
 		return &resp
 	}
@@ -108,7 +108,7 @@ func killCourse(sc *model.StudentCourse) model.ErrNo {
 //检验学生和课程是否存在，以及课程是否已满
 func checkStuCou(sid, cid int) model.ErrNo {
 	//检验学生是否存在，在本地内存中查询
-	if !model.StudentList[sid] {
+	if _, ok := model.StudentList[sid]; !ok {
 		return model.StudentNotExisted
 	}
 	//检验课程是否存在,在缓存中查询

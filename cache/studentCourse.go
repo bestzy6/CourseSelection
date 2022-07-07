@@ -3,7 +3,6 @@ package cache
 import (
 	"ByteDanceCamp8th/model"
 	"context"
-	"errors"
 	"github.com/go-redis/redis/v8"
 	"strconv"
 )
@@ -41,18 +40,27 @@ func ChooseCourseInRedis(sc *model.StudentCourse) error {
 	sid, cid := "s_"+strconv.Itoa(sc.MemberId), "c_"+strconv.Itoa(sc.CourseId)
 	//事务方法
 	txf := func(tx *redis.Tx) error {
+		//检查库存
 		capLeft, err := tx.HGet(context.TODO(), cid, "cap_left").Int()
 		if err != nil {
 			return err
 		}
+		// 已经抢完
 		if capLeft <= 0 {
 			return ZeroLeftError{}
 		}
-		// 库存减一
+		//是否抢过了该课程
+		ok := tx.SIsMember(context.TODO(), sid, cid).Val()
+		if ok {
+			return HasBindCourseError{}
+		}
 		_, err = tx.TxPipelined(context.TODO(), func(pipe redis.Pipeliner) error {
-			pipe.HSet(context.TODO(), cid, "cap_left", capLeft-1)
-			pipe.SAdd(context.TODO(), sid, cid)
-			return nil
+			err := pipe.HSet(context.TODO(), cid, "cap_left", capLeft-1).Err()
+			if err != nil {
+				return err
+			}
+			err = pipe.SAdd(context.TODO(), sid, cid).Err()
+			return err
 		})
 		return err
 	}
@@ -60,18 +68,17 @@ func ChooseCourseInRedis(sc *model.StudentCourse) error {
 	var err error
 	for i := 0; i < 3; i++ {
 		err = RedisClient.Watch(context.TODO(), txf, cid)
-		//没有错误，直接返回
-		if err == nil {
-			return nil
-		} else if errors.Is(err, redis.TxFailedErr) {
-			//事务错误，继续尝试
-			continue
-		} else if errors.Is(err, ZeroLeftError{}) {
-			//课程已满
+		switch err.(type) {
+		case ZeroLeftError:
 			return err
+		case HasBindCourseError:
+			return err
+		case nil:
+			//RedisClient.SAdd(context.TODO(), sid, cid)
+			return nil
+		default:
+			continue
 		}
-		//抢课失败
-		return err
 	}
 	return err
 }

@@ -17,4 +17,5 @@ func init() {
 	model.InitMysql()
 	cache.InitRedis()
 	util.InitMQ()
+	model.CreateIndexList()
 }

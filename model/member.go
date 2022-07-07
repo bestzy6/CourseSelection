@@ -14,7 +14,16 @@ func (Member) TableName() string {
 }
 
 // StudentList 存放学生的映射，用以判断学生是否存在。
-var StudentList = make(map[int]bool)
+var StudentList = make(map[int]struct{})
+
+// CreateIndexList 初始时将学生信息放入映射
+func CreateIndexList() {
+	var members []Member
+	db.Where("usertype=?", Student).Select("userid").Find(&members)
+	for i := 0; i < len(members); i++ {
+		StudentList[members[i].UserID] = struct{}{}
+	}
+}
 
 // DeleteMember 删除成员
 func (member *Member) DeleteMember() error {
